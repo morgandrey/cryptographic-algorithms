@@ -1,0 +1,48 @@
+﻿<Window x:Class="CryptographicAlgorithms.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CryptographicAlgorithms"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:System="clr-namespace:System;assembly=System.Runtime"
+        xmlns:extensions="clr-namespace:CryptographicAlgorithms.Extensions"
+        xmlns:enums="clr-namespace:CryptographicAlgorithms.Enums"
+        mc:Ignorable="d"
+        Title="Криптография" Height="700" Width="1000" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.4*"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <xctk:WatermarkTextBox Name="inputTextBox" Watermark="Введите текст (500 символов максимум)" Margin="5" FontSize="25" TextWrapping="Wrap" MaxLength="500" Grid.Row="0" Grid.Column="1" PreviewTextInput="InputTextBox_OnPreviewTextInput"/>
+        <Label Name="resultLabel" Grid.Row="1" Grid.Column="1" Margin="5" FontSize="25"/>
+        <Grid Grid.RowSpan="2" Grid.Row="0" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <UniformGrid Grid.Row="0" Rows="2">
+                <Label Content="Криптографический алгоритм" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="16"/>
+                <ComboBox Name="cryptographicAlgorithmComboBox" Margin="5,20,5,20" ItemsSource="{extensions:EnumBindingSource enums:Algorithm}" SelectedItem="{Binding AlgorithmSelectedItem}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="20"/>
+            </UniformGrid>
+            <UniformGrid Grid.Row="1" Rows="2">
+                <Label Content="Ключ" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="19"/>
+                <TextBox Name="keyTextBox" FontSize="20" MaxLength="20" Margin="5" VerticalContentAlignment="Center" TextWrapping="Wrap" HorizontalContentAlignment="Center" PreviewTextInput="KeyTextBox_OnPreviewTextInput"/>
+            </UniformGrid>
+            <UniformGrid Grid.Row="2" Columns="2" Rows="2">
+                <Button Name="encryptBtn" Margin="10,10,0,10" Content="шифрование" FontSize="15" IsEnabled="False" Click="ChangeDirection_OnClick"/>
+                <Button Name="decryptBtn" Margin="0,10,10,10" Content="расшифрование" FontSize="15" Click="ChangeDirection_OnClick"/>
+                <Label VerticalAlignment="Center" FontSize="15" HorizontalAlignment="Center" Content="Алфавит"/>
+                <ComboBox x:Name="alphabetComboBox" Margin="0,10,10,10" FontSize="15" ItemsSource="{extensions:EnumBindingSource enums:Alphabet}" SelectedItem="{Binding AlphabetSelectedItem}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+            </UniformGrid>
+            <Button Grid.Row="3" Margin="25,50,25,50" Content="Вперед" FontSize="20" Click="Apply_Click"/>
+        </Grid>
+    </Grid>
+</Window>
