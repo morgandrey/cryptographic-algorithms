@@ -4,7 +4,7 @@ using CryptographicAlgorithms.Extensions;
 namespace CryptographicAlgorithms.Enums {
     [TypeConverter(typeof(EnumDescriptionTypeConverter))]
     public enum Algorithm {
-        [Description("Система Вижинера")]
+        [Description("Система Виженера")]
         Vigenere,
         [Description("Шифр Цезаря")]
         Caesar,
@@ -13,6 +13,14 @@ namespace CryptographicAlgorithms.Enums {
         [Description("Полибианский квадрат")]
         Polybius,
         [Description("Скитала")]
-        Scytale
+        Scytale,
+        [Description("Шифрующие таблицы")]
+        Tables,
+        [Description("Двойная перестановка")]
+        DoublePermutation,
+        [Description("Магический квадрат")]
+        MagicSquare,
+        [Description("Шифр Уитстона")]
+        Wheatstone
     }
 }
