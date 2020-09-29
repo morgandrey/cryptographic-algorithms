@@ -15,9 +15,9 @@ namespace CryptographicAlgorithms.Enums {
         [Description("Скитала")]
         Scytale,
         [Description("Шифрующие таблицы")]
-        Tables,
+        TableTransposition,
         [Description("Двойная перестановка")]
-        DoublePermutation,
+        DoubleTransposition,
         [Description("Магический квадрат")]
         MagicSquare,
         [Description("Шифр Уитстона")]

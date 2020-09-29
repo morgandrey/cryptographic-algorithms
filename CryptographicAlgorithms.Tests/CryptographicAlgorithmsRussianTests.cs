@@ -2,7 +2,7 @@
 using Xunit;
 
 namespace CryptographicAlgorithms.Tests {
-    public class CryptographicAlgorithmsTests {
+    public class CryptographicAlgorithmsRussianTests {
         private readonly CryptographicAlgorithm cryptographicAlgorithm = new CryptographicAlgorithm(Alphabet.Russian);
         [Fact]
         public void EncryptCaesarRus() {
@@ -64,6 +64,37 @@ namespace CryptographicAlgorithms.Tests {
         public void DecryptPolybiusRus() {
             Assert.Equal("чамирнеоль", cryptographicAlgorithm.DecryptPolybius("эзхгбцёчфт", "привет"));
             Assert.Equal("приезжаю_восьмого", cryptographicAlgorithm.DecryptPolybius("абгёонзрвдчштхчкч", "привет"));
+        }
+        [Fact]
+        public void EncryptWheatstoneRus() {
+            Assert.Equal("йозщгкщьыц", cryptographicAlgorithm.EncryptWheatstone("чамирнеоль"));
+            Assert.Equal("пеьвкифмеснгмьнюхл", cryptographicAlgorithm.EncryptWheatstone("Приезжаю_восьмого"));
+        }
+        [Fact]
+        public void DecryptWheatstoneRus() {
+            Assert.Equal("чамирнеоль", cryptographicAlgorithm.DecryptWheatstone("йозщгкщьыц"));
+            Assert.Equal("приезжаю_восьмого_", cryptographicAlgorithm.DecryptWheatstone("пеьвкифмеснгмьнюхл"));
+        }
+        [Fact]
+        public void EncryptTableTranspositionRus() {
+            Assert.Equal("ыбьти_илн__еыбьт", cryptographicAlgorithm.EncryptTableTransposition("быть_или_не_быть", "2143"));
+            Assert.Equal("рпеижзюав_сомьго_о__", cryptographicAlgorithm.EncryptTableTransposition("Приезжаю_восьмого", "2143"));
+        }
+
+        [Fact] 
+        public void DecryptTableTranspositionRus() {
+            Assert.Equal("быть_или_не_быть", cryptographicAlgorithm.DecryptTableTransposition("ыбьти_илн__еыбьт", "2143"));
+            Assert.Equal("приезжаю_восьмого___", cryptographicAlgorithm.DecryptTableTransposition("рпеижзюав_сомьго_о__", "2143"));
+        }
+        [Fact]
+        public void EncryptDoubleTranspositionRus() {
+            Assert.Equal("аоср_жгоп___ме_ю_ьи_в_оз_", cryptographicAlgorithm.EncryptDoubleTransposition("Приезжаю_восьмого", "21435 пакет"));
+            Assert.Equal("л_пу_ск_чмшршя_ыгу__уое__", cryptographicAlgorithm.EncryptDoubleTransposition("Чу_я_слышу_пушек_гром", "21435 пакет"));
+        }
+        [Fact]
+        public void DecryptDoubleTranspositionRus() {
+            Assert.Equal("приезжаю_восьмого________", cryptographicAlgorithm.DecryptDoubleTransposition("аоср_жгоп___ме_ю_ьи_в_оз_", "21435 пакет"));
+            Assert.Equal("чу_я_слышу_пушек_гром____", cryptographicAlgorithm.DecryptDoubleTransposition("л_пу_ск_чмшршя_ыгу__уое__", "21435 пакет"));
         }
     }
 }

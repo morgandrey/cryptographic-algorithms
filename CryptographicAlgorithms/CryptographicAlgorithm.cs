@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using CryptographicAlgorithms.Enums;
 
 namespace CryptographicAlgorithms {
@@ -17,7 +20,7 @@ namespace CryptographicAlgorithms {
             {'ж', 'щ', 'н', 'ю', 'р'},
             {'и', 'т', 'ь', 'ц', 'б'},
             {'я', 'м', 'е', '.', 'с'},
-            {'в', 'ы', 'п', 'ч', ' '},
+            {'в', 'ы', 'п', 'ч', '_'},
             {'й', 'д', 'у', 'о', 'к'},
             {'з', 'э', 'ф', 'г', 'ш'},
             {'х', 'а', ',', 'л', 'ъ'}
@@ -29,7 +32,7 @@ namespace CryptographicAlgorithms {
             {'ц', 'й', 'п', 'е', 'л'},
             {'ъ', 'а', 'н', '.', 'х'},
             {'э', 'к', 'с', 'ш', 'д'},
-            {'б', 'ф', 'у', 'ы', ' '}
+            {'б', 'ф', 'у', 'ы', '_'}
         };
         public CryptographicAlgorithm(Alphabet alphabet) {
             switch (alphabet) {
@@ -224,23 +227,118 @@ namespace CryptographicAlgorithms {
         }
         #endregion
 
-        #region Tables
-        public string EncryptTables(string text, long key) {
+        #region TableTransposition
+        public string CodeEncodeTableTransposition(string text, string key, bool encrypt = true) {
             text = text.ToLower();
+            int[] _key = new int[key.Length];
+            for (int i = 0; i < key.Length; i++) {
+                _key[i] = int.Parse(key[i].ToString());
+            }
             var resStr = "";
-            return resStr;
-        }
 
-        public string DecryptTables(string text, long key) {
-            text = text.ToLower();
-            var resStr = "";
+            if (encrypt) {
+                for (int i = 0; i < text.Length % _key.Length; i++) {
+                    text += "_";
+                }
+            }
+
+            for (int i = 0; i < text.Length; i += _key.Length) {
+                var transposition = new char[_key.Length];
+
+                for (int j = 0; j < _key.Length; j++) {
+                    if (encrypt) {
+                        transposition[_key[j] - 1] = text[i + j];
+                    } else {
+                        transposition[j] = text[i + _key[j] - 1];
+                    }
+                }
+
+                for (int j = 0; j < _key.Length; j++) {
+                    resStr += transposition[j];
+                }
+            }
+
             return resStr;
         }
+        public string EncryptTableTransposition(string plainMessage, string key) => CodeEncodeTableTransposition(plainMessage, key);
+        public string DecryptTableTransposition(string encryptedMessage, string key) => CodeEncodeTableTransposition(encryptedMessage, key, false);
 
         #endregion
 
+        #region DoubleTransposition
+        private int[] StringToArrayNumberPos(string key) {
+            var alphabetDictionary = new Dictionary<char, int> {
+                { '1', 1 }, { '2', 2 }, { '3', 3 }, { '4', 4 }, { '5', 5 }, { '6', 6 },
+                { '7', 7 }, { '8', 8 }, { '9', 9 }, { 'а', 10 }, { 'б', 11 }, { 'в', 12 },
+                { 'г', 13 }, { 'д', 14 }, { 'е', 15 }, { 'ё', 16 }, { 'ж', 17 }, { 'з', 18 },
+                { 'и', 19 }, { 'й', 20 }, { 'к', 21 }, { 'л', 22 }, { 'м', 23 }, { 'н', 24 },
+                { 'о', 25 }, { 'п', 26 }, { 'р', 27 }, { 'с', 28 }, { 'т', 29 }, { 'у', 30 },
+                { 'ф', 31 }, { 'х', 32 }, { 'ц', 33 }, { 'ч', 34 }, { 'ш', 35 }, { 'щ', 36 },
+                { 'ъ', 37 }, { 'ы', 38 }, { 'ь', 39 }, { 'э', 40 }, { 'ю', 41 }, { 'я', 42 }
+            };
+            var arr = new int[key.Length];
+            var count = 0;
+            foreach (var literal in key) {
+                arr[count++] = alphabetDictionary[literal];
+            }
+            return arr;
+        }
+        private string CodeEncodeDoubleTransposition(string text, string key, bool encrypt = true) {
+            text = text.ToLower();
+            key = key.ToLower();
+            var resStr = "";
+            var _cryptFirstKey = key.Substring(0, key.IndexOf(' '));
+            var _cryptSecondKey = key.Substring(key.IndexOf(' ') + 1);
+
+            var cryptFirstKey = StringToArrayNumberPos(_cryptFirstKey);
+            var cryptSecondKey = StringToArrayNumberPos(_cryptSecondKey);
+
+            var sortedFirstKey = cryptFirstKey.OrderBy(x => x).ToArray();
+            var sortedSecondKey = cryptSecondKey.OrderBy(x => x).ToArray();
+
+
+            var encryptStr = new char[sortedFirstKey.Length, sortedSecondKey.Length]; 
+            var originalStrArray = new char[sortedFirstKey.Length, sortedSecondKey.Length];
+
+            // преобразуем шифруемую строку в массив
+            int count = 0;
+            for (int i = 0; i < sortedFirstKey.Length; i++) {
+                for (int j = 0; j < sortedSecondKey.Length; j++) {
+                    if (encrypt) {
+                        originalStrArray[i, j] = text.Length <= count ? '_' : text[count];
+                    } else {
+                        originalStrArray[j, i] = text.Length <= count ? '_' : text[count];
+                    }
+                    count++;
+                }
+            }
+
+            // шифрование
+            for (int i = 0; i < sortedFirstKey.Length; i++) {
+                for (int j = 0; j < sortedSecondKey.Length; j++) {
+                    var rowNumber = encrypt ? Array.IndexOf(cryptSecondKey, sortedSecondKey[i]) : Array.IndexOf(sortedSecondKey, cryptSecondKey[i]);
+                    var columnNumber = encrypt ? Array.IndexOf(cryptFirstKey, sortedFirstKey[j]) : Array.IndexOf(sortedFirstKey, cryptFirstKey[j]);
+                    encryptStr[i, j] = originalStrArray[rowNumber, columnNumber];
+                }
+            }
+
+            for (int i = 0; i < sortedFirstKey.Length; i++) {
+                for (int j = 0; j < sortedSecondKey.Length; j++) {
+                    if (encrypt) {
+                        resStr += encryptStr[j, i];
+                    } else {
+                        resStr += encryptStr[i, j];
+                    }
+                }
+            }
+            return resStr;
+        }
+        public string EncryptDoubleTransposition(string plainMessage, string key) => CodeEncodeDoubleTransposition(plainMessage, key);
+        public string DecryptDoubleTransposition(string encryptedMessage, string key) => CodeEncodeDoubleTransposition(encryptedMessage, key, false);
+        #endregion
+
         #region MagicSquare 5x5
-            public string EncryptMagicSquare(string plainMessage) {
+        public string EncryptMagicSquare(string plainMessage) {
             var resStr = "";
             char[,] arr = {
                 {'_', '_', '_', '_', '_'},
@@ -290,28 +388,53 @@ namespace CryptographicAlgorithms {
         #endregion
 
         #region Wheatstone
-        public string EncryptWheatstone(string plainMessage) {
-            var resStr = "";
-            var arr = new char[5, 5];
-            for (int i = 0; i < plainMessage.Length; i++) {
-                for (int j = 0; j < magicSquare.GetLength(0); j++) {
-                    for (int k = 0; k < magicSquare.GetLength(1); k++) {
-                        if (magicSquare[j, k] == i + 1) {
-                            arr[j, k] = plainMessage[i];
-                        }
+        private int[] FindIndexes(char symbol, char[,] matrix) {
+            var a = new int[2];
+            for (int i = 0; i < 7; i++) {
+                for (int j = 0; j < 5; j++) {
+                    if (symbol == matrix[i, j]) {
+                        a[0] = i;
+                        a[1] = j;
                     }
                 }
             }
+            return a;
+        }
+        private string CodeEncodeWheatstone(string message, bool encrypt = true) {
+            message = message.ToLower();
+            var resStr = "";
+            if (message.Length % 2 != 0) {
+                message += '_';
+            }
+            var length = message.Length / 2;
+            var k = 0;
+            var bigram = new char[length, 2];
+            var crypto_bigram = new char[length, 2];
 
-            for (int i = 0; i < arr.GetLength(0); i++) {
-                for (int j = 0; j < arr.GetLength(1); j++) {
-                    resStr += arr[i, j];
+            for (int i = 0; i < length; i++) {
+                for (int j = 0; j < 2; j++) {
+                    bigram[i, j] = message[k];
+                    k++;
+                }
+            }
+            var step = 0;
+            while (step < length) {
+                var cortege1 = encrypt ? FindIndexes(bigram[step, 0], wheatStoneFirstMatrix) : FindIndexes(bigram[step, 0], wheatStoneSecondMatrix);
+                var cortege2 = encrypt ? FindIndexes(bigram[step, 1], wheatStoneSecondMatrix) : FindIndexes(bigram[step, 1], wheatStoneFirstMatrix);
+                crypto_bigram[step, 0] = encrypt ? wheatStoneSecondMatrix[cortege1[0], cortege2[1]] : wheatStoneFirstMatrix[cortege1[0], cortege2[1]];
+                crypto_bigram[step, 1] = encrypt ? wheatStoneFirstMatrix[cortege2[0], cortege1[1]] : wheatStoneSecondMatrix[cortege2[0], cortege1[1]];
+                step++;
+            }
+
+            for (int i = 0; i < length; i++) {
+                for (int j = 0; j < 2; j++) {
+                    resStr += crypto_bigram[i, j].ToString();
                 }
             }
             return resStr;
         }
-
-
+        public string EncryptWheatstone(string message) => CodeEncodeWheatstone(message);
+        public string DecryptWheatstone(string encryptedMessage) => CodeEncodeWheatstone(encryptedMessage, false);
         #endregion
     }
 }

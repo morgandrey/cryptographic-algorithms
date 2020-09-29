@@ -32,6 +32,7 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <Label VerticalAlignment="Center" HorizontalAlignment="Center" Content="Результат:" FontSize="25"/>
+            <Label Grid.Row="0" Content="{Binding NumberOfSymbols}" VerticalAlignment="Top" HorizontalAlignment="Left" FontSize="15"/>
             <TextBox Name="resultLabel" IsReadOnlyCaretVisible="True" IsReadOnly="True" Grid.Row="1" Margin="5" FontSize="25"/>
         </Grid>
         <Grid Grid.RowSpan="2" Grid.Row="0" Grid.Column="0">
@@ -50,8 +51,8 @@
                 <xctk:WatermarkTextBox Name="keyTextBox" Watermark="(15 символов максимум)" FontSize="20" MaxLength="15" Margin="5,15,5,15" VerticalContentAlignment="Center" TextWrapping="Wrap" HorizontalContentAlignment="Center" PreviewKeyDown="KeyTextBox_OnPreviewKeyDown" PreviewTextInput="KeyTextBox_OnPreviewTextInput"/>
             </UniformGrid>
             <UniformGrid Grid.Row="2" Columns="2" Rows="2">
-                <Button Name="encryptBtn" Margin="10,20,0,20" Content="шифрование" FontSize="15" IsEnabled="False" Click="ChangeDirection_OnClick"/>
-                <Button Name="decryptBtn" Margin="0,20,10,20" Content="расшифрование" FontSize="15" Click="ChangeDirection_OnClick"/>
+                <Button Name="encryptBtn" Margin="10,20,0,20" Content="шифрование" FontSize="15" IsEnabled="False" Click="ChangeAlgorithmDirection_OnClick"/>
+                <Button Name="decryptBtn" Margin="0,20,10,20" Content="расшифрование" FontSize="15" Click="ChangeAlgorithmDirection_OnClick"/>
                 <Label VerticalAlignment="Center" FontSize="15" HorizontalAlignment="Center" Content="Алфавит"/>
                 <ComboBox x:Name="alphabetComboBox" Margin="0,20,10,20" FontSize="15" ItemsSource="{extensions:EnumBindingSource enums:Alphabet}" SelectedItem="{Binding AlphabetSelectedItem}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
             </UniformGrid>

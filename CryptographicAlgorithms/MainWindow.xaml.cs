@@ -36,6 +36,16 @@ namespace CryptographicAlgorithms {
             get => inputString;
             set {
                 inputString = value;
+                NumberOfSymbols = $"Количество символов: {inputString.Length}";
+                OnPropertyChanged();
+            }
+        }
+
+        private string numberOfSymbols = "Количество символов: 0";
+        public string NumberOfSymbols {
+            get => numberOfSymbols;
+            set {
+                numberOfSymbols = value;
                 OnPropertyChanged();
             }
         }
@@ -64,13 +74,12 @@ namespace CryptographicAlgorithms {
                     case true:
                         switch (AlgorithmSelectedItem) {
                             case Algorithm.Polybius:
-                                if (keyTextBox.Text.Distinct().Count() != keyTextBox.Text.Length) {
-                                    MessageBox.Show("Введите ключ без повторяющих символов", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                    return;
+                                if (CheckPolybiusKeyTextBox()) {
+                                    resultLabel.Text =
+                                        cryptographicAlgorithm.EncryptPolybius(InputString, keyTextBox.Text);
+                                    break;
                                 }
-                                resultLabel.Text =
-                                    cryptographicAlgorithm.EncryptPolybius(InputString, keyTextBox.Text);
-                                break;
+                                return;
                             case Algorithm.Caesar:
                                 resultLabel.Text =
                                     cryptographicAlgorithm.EncryptCaesar(InputString, long.Parse(keyTextBox.Text));
@@ -90,29 +99,41 @@ namespace CryptographicAlgorithms {
                                         long.Parse(keyTextBox.Text));
                                 break;
                             case Algorithm.MagicSquare:
-                                if (InputString.Length > 25) {
-                                    MessageBox.Show("Введите сообщение меньше 25 символов", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                    return;
+                                if (CheckMagicSquareInputTextBox()) {
+                                    resultLabel.Text =
+                                        cryptographicAlgorithm.EncryptMagicSquare(InputString);
+                                    break;
                                 }
+                                return;
+                            case Algorithm.TableTransposition:
+                                if (CheckTableTranspositionAlgorithmKeyTextBox()) {
+                                    resultLabel.Text =
+                                        cryptographicAlgorithm.EncryptTableTransposition(InputString, keyTextBox.Text);
+                                    break;
+                                }
+                                return;
+                            case Algorithm.Wheatstone:
                                 resultLabel.Text =
-                                    cryptographicAlgorithm.EncryptMagicSquare(InputString);
+                                    cryptographicAlgorithm.EncryptWheatstone(InputString);
                                 break;
-                            case Algorithm.Tables:
-                                resultLabel.Text =
-                                    cryptographicAlgorithm.EncryptTables(InputString, long.Parse(keyTextBox.Text));
-                                break;
+                            case Algorithm.DoubleTransposition:
+                                if (CheckDoubleTransposition()) {
+                                    resultLabel.Text =
+                                        cryptographicAlgorithm.EncryptDoubleTransposition(InputString, keyTextBox.Text);
+                                    break;
+                                }
+                                return;
                         }
                         break;
                     case false:
                         switch (AlgorithmSelectedItem) {
                             case Algorithm.Polybius:
-                                if (keyTextBox.Text.Distinct().Count() != keyTextBox.Text.Length) {
-                                    MessageBox.Show("Введите ключ без повторяющих символов", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                    return;
+                                if (CheckPolybiusKeyTextBox()) {
+                                    resultLabel.Text =
+                                        cryptographicAlgorithm.DecryptPolybius(InputString, keyTextBox.Text);
+                                    break;
                                 }
-                                resultLabel.Text =
-                                    cryptographicAlgorithm.DecryptPolybius(InputString, keyTextBox.Text);
-                                break;
+                                return;
                             case Algorithm.Caesar:
                                 resultLabel.Text =
                                     cryptographicAlgorithm.DecryptCaesar(InputString, long.Parse(keyTextBox.Text));
@@ -132,17 +153,30 @@ namespace CryptographicAlgorithms {
                                         long.Parse(keyTextBox.Text));
                                 break;
                             case Algorithm.MagicSquare:
-                                if (InputString.Length > 25) {
-                                    MessageBox.Show("Введите сообщение меньше 25 символов", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                    return;
+                                if (CheckMagicSquareInputTextBox()) {
+                                    resultLabel.Text =
+                                        cryptographicAlgorithm.DecryptMagicSquare(InputString);
+                                    break;
                                 }
+                                return;
+                            case Algorithm.TableTransposition:
+                                if (CheckTableTranspositionAlgorithmKeyTextBox()) {
+                                    resultLabel.Text =
+                                        cryptographicAlgorithm.DecryptTableTransposition(InputString, keyTextBox.Text);
+                                    break;
+                                }
+                                return;
+                            case Algorithm.Wheatstone:
                                 resultLabel.Text =
-                                    cryptographicAlgorithm.DecryptMagicSquare(InputString);
+                                    cryptographicAlgorithm.DecryptWheatstone(InputString);
                                 break;
-                            case Algorithm.Tables:
-                                resultLabel.Text =
-                                    cryptographicAlgorithm.DecryptTables(InputString, long.Parse(keyTextBox.Text));
-                                break;
+                            case Algorithm.DoubleTransposition:
+                                if (CheckDoubleTransposition()) {
+                                    resultLabel.Text =
+                                        cryptographicAlgorithm.DecryptDoubleTransposition(InputString, keyTextBox.Text);
+                                    break;
+                                }
+                                return;
                         }
                         break;
                 }
@@ -151,7 +185,7 @@ namespace CryptographicAlgorithms {
             }
         }
 
-        private void ChangeDirection_OnClick(object sender, RoutedEventArgs e) {
+        private void ChangeAlgorithmDirection_OnClick(object sender, RoutedEventArgs e) {
             if (encryptBtn.IsEnabled == false) {
                 encryptBtn.IsEnabled = true;
                 decryptBtn.IsEnabled = false;
@@ -175,32 +209,82 @@ namespace CryptographicAlgorithms {
             }
             e.Handled = !r.IsMatch(e.Text);
         }
-
+        private bool CheckTableTranspositionAlgorithmKeyTextBox() {
+            var str = keyTextBox.Text;
+            var arr = new int[str.Length];
+            for (int i = 0; i < str.Length; i++) {
+                arr[i] = int.Parse(str[i].ToString());
+            }
+            var check = false;
+            Array.Sort(arr);
+            for (int i = 0; i < arr.Length; i++) {
+                if (i + 1 != arr[i]) {
+                    check = true;
+                    break;
+                }
+            }
+            if (keyTextBox.Text.Distinct().Count() != keyTextBox.Text.Length || keyTextBox.Text.Contains('0') || check) {
+                MessageBox.Show("В ключе не должно быть повторяющихся цифр, нуля и цифр пропускающих числовую последовательность.\nПример ключа: 4132, 948172536", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+            return true;
+        }
+        private bool CheckMagicSquareInputTextBox() {
+            if (InputString.Length > 25) {
+                MessageBox.Show("Введите сообщение меньше 25 символов.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+            return true;
+        }
+        private bool CheckDoubleTransposition() {
+            var cryptFirstKey = keyTextBox.Text.Substring(0, keyTextBox.Text.IndexOf(' '));
+            var cryptSecondKey = keyTextBox.Text.Substring(keyTextBox.Text.IndexOf(' ') + 1);
+            if (cryptFirstKey.Length != cryptSecondKey.Length
+                || cryptFirstKey.Length * cryptSecondKey.Length < InputString.Length
+                || cryptSecondKey.Distinct().Count() != cryptSecondKey.Length
+                || cryptFirstKey.Distinct().Count() != cryptFirstKey.Length) {
+                MessageBox.Show("Ключи должны быть равными, не содержать дубликатов и количество символов в строке для шифрования не должно быть больше произведения количества символов двух ключей.\nПример ключа: 839_дом", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+            return true;
+        }
+        private bool CheckPolybiusKeyTextBox() {
+            if (keyTextBox.Text.Distinct().Count() != keyTextBox.Text.Length) {
+                MessageBox.Show("Введите ключ без повторяющих символов.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+            return true;
+        }
         private void KeyTextBox_OnPreviewTextInput(object sender, TextCompositionEventArgs e) {
-            Regex r = null;
+            Regex r;
             switch (AlgorithmSelectedItem) {
                 case Algorithm.Gronsfeld:
-                case Algorithm.Tables:
+                case Algorithm.TableTransposition:
                 case Algorithm.Caesar:
                 case Algorithm.Scytale:
                     r = new Regex("^[0-9]*$");
+                    e.Handled = !r.IsMatch(e.Text);
                     break;
                 case Algorithm.Vigenere:
                 case Algorithm.Polybius:
                     switch (AlphabetSelectedItem) {
                         case Alphabet.Russian:
                             r = new Regex("^[а-яА-ЯёЁ]*$");
+                            e.Handled = !r.IsMatch(e.Text);
                             break;
                         case Alphabet.Latin:
                             r = new Regex("^[a-zA-Z]*$");
+                            e.Handled = !r.IsMatch(e.Text);
                             break;
                     }
                     break;
             }
-            e.Handled = !r.IsMatch(e.Text);
         }
 
         private void KeyTextBox_OnPreviewKeyDown(object sender, KeyEventArgs e) {
+            if (AlgorithmSelectedItem == Algorithm.DoubleTransposition && !keyTextBox.Text.Contains(' ')) {
+                return;
+            }
             if (e.Key == Key.Space) {
                 e.Handled = true;
             }
