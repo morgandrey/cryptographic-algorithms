@@ -68,6 +68,12 @@ namespace CryptographicAlgorithms {
                 MessageBox.Show("Введите текст", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+            if (string.IsNullOrEmpty(keyTextBox.Text)) {
+                if (AlgorithmSelectedItem != Algorithm.MagicSquare) {
+                    MessageBox.Show("Введите ключ", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+            }
             var cryptographicAlgorithm = new CryptographicAlgorithm(AlphabetSelectedItem);
             try {
                 switch (algorithmDirection) {
@@ -94,10 +100,13 @@ namespace CryptographicAlgorithms {
                                     cryptographicAlgorithm.EncryptVigenere(InputString, keyTextBox.Text);
                                 break;
                             case Algorithm.Scytale:
-                                resultLabel.Text =
-                                    cryptographicAlgorithm.EncryptScytale(InputString,
-                                        long.Parse(keyTextBox.Text));
-                                break;
+                                if (CheckScytaleKeyTextBox()) {
+                                    resultLabel.Text =
+                                        cryptographicAlgorithm.EncryptScytale(InputString,
+                                            int.Parse(keyTextBox.Text));
+                                    break;
+                                }
+                                return;
                             case Algorithm.MagicSquare:
                                 if (CheckMagicSquareInputTextBox()) {
                                     resultLabel.Text =
@@ -113,9 +122,12 @@ namespace CryptographicAlgorithms {
                                 }
                                 return;
                             case Algorithm.Wheatstone:
-                                resultLabel.Text =
-                                    cryptographicAlgorithm.EncryptWheatstone(InputString);
-                                break;
+                                if (CheckWheatstone()) {
+                                    resultLabel.Text =
+                                        cryptographicAlgorithm.EncryptWheatstone(InputString, keyTextBox.Text);
+                                    break;
+                                }
+                                return;
                             case Algorithm.DoubleTransposition:
                                 if (CheckDoubleTransposition()) {
                                     resultLabel.Text =
@@ -148,10 +160,13 @@ namespace CryptographicAlgorithms {
                                     cryptographicAlgorithm.DecryptVigenere(InputString, keyTextBox.Text);
                                 break;
                             case Algorithm.Scytale:
-                                resultLabel.Text =
-                                    cryptographicAlgorithm.DecryptScytale(InputString,
-                                        long.Parse(keyTextBox.Text));
-                                break;
+                                if (CheckScytaleKeyTextBox()) {
+                                    resultLabel.Text =
+                                        cryptographicAlgorithm.DecryptScytale(InputString,
+                                            int.Parse(keyTextBox.Text));
+                                    break;
+                                }
+                                return;
                             case Algorithm.MagicSquare:
                                 if (CheckMagicSquareInputTextBox()) {
                                     resultLabel.Text =
@@ -167,9 +182,12 @@ namespace CryptographicAlgorithms {
                                 }
                                 return;
                             case Algorithm.Wheatstone:
-                                resultLabel.Text =
-                                    cryptographicAlgorithm.DecryptWheatstone(InputString);
-                                break;
+                                if (CheckWheatstone()) {
+                                    resultLabel.Text =
+                                        cryptographicAlgorithm.DecryptWheatstone(InputString, keyTextBox.Text);
+                                    break;
+                                }
+                                return;
                             case Algorithm.DoubleTransposition:
                                 if (CheckDoubleTransposition()) {
                                     resultLabel.Text =
@@ -209,6 +227,15 @@ namespace CryptographicAlgorithms {
             }
             e.Handled = !r.IsMatch(e.Text);
         }
+
+        #region CheckFunctions
+        private bool CheckScytaleKeyTextBox() {
+            if (int.Parse(keyTextBox.Text) > InputString.Length) {
+                MessageBox.Show("Введите диаметр меньший чем длина сообщения", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+            return true;
+        }
         private bool CheckTableTranspositionAlgorithmKeyTextBox() {
             var str = keyTextBox.Text;
             var arr = new int[str.Length];
@@ -236,6 +263,16 @@ namespace CryptographicAlgorithms {
             }
             return true;
         }
+        private bool CheckWheatstone() {
+            var cryptFirstKey = keyTextBox.Text.Substring(0, keyTextBox.Text.IndexOf(' '));
+            var cryptSecondKey = keyTextBox.Text.Substring(keyTextBox.Text.IndexOf(' ') + 1);
+            if (cryptSecondKey.Distinct().Count() != cryptSecondKey.Length
+                || cryptFirstKey.Distinct().Count() != cryptFirstKey.Length) {
+                MessageBox.Show("Ключи должны не содержать дубликатов.\nПример ключа: пароль_дом", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+            return true;
+        }
         private bool CheckDoubleTransposition() {
             var cryptFirstKey = keyTextBox.Text.Substring(0, keyTextBox.Text.IndexOf(' '));
             var cryptSecondKey = keyTextBox.Text.Substring(keyTextBox.Text.IndexOf(' ') + 1);
@@ -255,34 +292,36 @@ namespace CryptographicAlgorithms {
             }
             return true;
         }
+        #endregion
+
         private void KeyTextBox_OnPreviewTextInput(object sender, TextCompositionEventArgs e) {
-            Regex r;
+            Regex r = null;
             switch (AlgorithmSelectedItem) {
                 case Algorithm.Gronsfeld:
                 case Algorithm.TableTransposition:
                 case Algorithm.Caesar:
                 case Algorithm.Scytale:
                     r = new Regex("^[0-9]*$");
-                    e.Handled = !r.IsMatch(e.Text);
                     break;
                 case Algorithm.Vigenere:
                 case Algorithm.Polybius:
+                case Algorithm.Wheatstone:
                     switch (AlphabetSelectedItem) {
                         case Alphabet.Russian:
                             r = new Regex("^[а-яА-ЯёЁ]*$");
-                            e.Handled = !r.IsMatch(e.Text);
                             break;
                         case Alphabet.Latin:
                             r = new Regex("^[a-zA-Z]*$");
-                            e.Handled = !r.IsMatch(e.Text);
                             break;
                     }
                     break;
             }
+            e.Handled = !r.IsMatch(e.Text);
         }
 
         private void KeyTextBox_OnPreviewKeyDown(object sender, KeyEventArgs e) {
-            if (AlgorithmSelectedItem == Algorithm.DoubleTransposition && !keyTextBox.Text.Contains(' ')) {
+            if (AlgorithmSelectedItem == Algorithm.DoubleTransposition && !keyTextBox.Text.Contains(' ')
+                || AlgorithmSelectedItem == Algorithm.Wheatstone && !keyTextBox.Text.Contains(' ')) {
                 return;
             }
             if (e.Key == Key.Space) {

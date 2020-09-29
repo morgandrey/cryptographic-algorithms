@@ -67,13 +67,13 @@ namespace CryptographicAlgorithms.Tests {
         }
         [Fact]
         public void EncryptWheatstoneRus() {
-            Assert.Equal("йозщгкщьыц", cryptographicAlgorithm.EncryptWheatstone("чамирнеоль"));
-            Assert.Equal("пеьвкифмеснгмьнюхл", cryptographicAlgorithm.EncryptWheatstone("Приезжаю_восьмого"));
+            Assert.Equal("вжкгнвою2одумьдда_", cryptographicAlgorithm.EncryptWheatstone("приезжаю_восьмого_", "пароль дом"));
+            Assert.Equal("щся_эубъщт1йтщекэдорн2", cryptographicAlgorithm.EncryptWheatstone("Чу_я_слышу_пушек_гром", "пароль дом"));
         }
         [Fact]
         public void DecryptWheatstoneRus() {
-            Assert.Equal("чамирнеоль", cryptographicAlgorithm.DecryptWheatstone("йозщгкщьыц"));
-            Assert.Equal("приезжаю_восьмого_", cryptographicAlgorithm.DecryptWheatstone("пеьвкифмеснгмьнюхл"));
+            Assert.Equal("приезжаю_восьмого_", cryptographicAlgorithm.DecryptWheatstone("вжкгнвою2одумьдда_", "пароль дом"));
+            Assert.Equal("чу_я_слышу_пушек_гром_", cryptographicAlgorithm.DecryptWheatstone("щся_эубъщт1йтщекэдорн2", "пароль дом"));
         }
         [Fact]
         public void EncryptTableTranspositionRus() {

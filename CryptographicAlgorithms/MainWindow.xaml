@@ -9,7 +9,7 @@
         xmlns:extensions="clr-namespace:CryptographicAlgorithms.Extensions"
         xmlns:enums="clr-namespace:CryptographicAlgorithms.Enums"
         mc:Ignorable="d"
-        Title="Криптография" Height="700" Width="1000" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" Background="SlateGray">
+        Title="Криптография" Height="700" Width="1000" MinHeight="700" MinWidth="1000" WindowStartupLocation="CenterScreen" Background="SlateGray">
     <Window.Resources>
         <Style TargetType="Button">
             <Setter Property="Cursor" Value="Hand"/>
@@ -33,7 +33,7 @@
             </Grid.RowDefinitions>
             <Label VerticalAlignment="Center" HorizontalAlignment="Center" Content="Результат:" FontSize="25"/>
             <Label Grid.Row="0" Content="{Binding NumberOfSymbols}" VerticalAlignment="Top" HorizontalAlignment="Left" FontSize="15"/>
-            <TextBox Name="resultLabel" IsReadOnlyCaretVisible="True" IsReadOnly="True" Grid.Row="1" Margin="5" FontSize="25"/>
+            <TextBox Name="resultLabel" IsReadOnlyCaretVisible="True" TextWrapping="Wrap" IsReadOnly="True" Grid.Row="1" Margin="5" FontSize="25"/>
         </Grid>
         <Grid Grid.RowSpan="2" Grid.Row="0" Grid.Column="0">
             <Grid.RowDefinitions>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CryptographicAlgorithms.Enums;
 
 namespace CryptographicAlgorithms {
@@ -15,24 +14,6 @@ namespace CryptographicAlgorithms {
             { 7, 25, 13, 1, 19 },
             { 24, 12, 5, 18, 6 },
             { 11, 4, 17, 10, 23 }
-        };
-        private readonly char[,] wheatStoneFirstMatrix = {
-            {'ж', 'щ', 'н', 'ю', 'р'},
-            {'и', 'т', 'ь', 'ц', 'б'},
-            {'я', 'м', 'е', '.', 'с'},
-            {'в', 'ы', 'п', 'ч', '_'},
-            {'й', 'д', 'у', 'о', 'к'},
-            {'з', 'э', 'ф', 'г', 'ш'},
-            {'х', 'а', ',', 'л', 'ъ'}
-        };
-        private readonly char[,] wheatStoneSecondMatrix = {
-            {'и', 'ч', 'г', 'я', 'т'},
-            {',', 'ж', 'м', 'ь', 'о'},
-            {'з', 'ю', 'р', 'в', 'щ'},
-            {'ц', 'й', 'п', 'е', 'л'},
-            {'ъ', 'а', 'н', '.', 'х'},
-            {'э', 'к', 'с', 'ш', 'д'},
-            {'б', 'ф', 'у', 'ы', '_'}
         };
         public CryptographicAlgorithm(Alphabet alphabet) {
             switch (alphabet) {
@@ -50,6 +31,9 @@ namespace CryptographicAlgorithms {
             var retVal = "";
             text = text.ToLower();
             var letterQty = alphabet.Length;
+            if (Math.Abs(k) > alphabet.Length) {
+                k %= alphabet.Length;
+            }
             for (int i = 0; i < text.Length; i++) {
                 var c = text[i];
                 var index = alphabet.IndexOf(c);
@@ -122,7 +106,7 @@ namespace CryptographicAlgorithms {
         #endregion
 
         #region Polybius
-        private char[,] GetPolybiusSquare(string key) {
+        private char[,] GetPolybiusOrWheatstoneSquare(string key, bool polybius = true) {
             var newAlphabet = alphabet;
             for (int i = 0; i < key.Length; i++) {
                 newAlphabet = newAlphabet.Replace(key[i].ToString(), "");
@@ -131,21 +115,39 @@ namespace CryptographicAlgorithms {
             var n = (int)Math.Ceiling(Math.Sqrt(newAlphabet.Length));
             var square = new char[n, n];
             var index = 0;
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                    if (index < newAlphabet.Length) {
-                        square[i, j] = newAlphabet[index];
-                        index++;
-                    } else {
-                        square[i, j] = ' ';
+            var randStringIndex = 0;
+            var randStr = "1234567890!@#$%^&*";
+            if (polybius) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < n; j++) {
+                        if (index < newAlphabet.Length) {
+                            square[i, j] = newAlphabet[index];
+                            index++;
+                        }
+                        else {
+                            square[i, j] = ' ';
+                        }
+                    }
+                }
+            } else {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < n; j++) {
+                        if (index < newAlphabet.Length) {
+                            square[i, j] = newAlphabet[index];
+                            index++;
+                        } else {
+                            square[i, j] = randStr[randStringIndex];
+                            randStringIndex++;
+                        }
                     }
                 }
             }
+
             return square;
         }
         public string EncryptPolybius(string text, string key) {
             text = text.ToLower();
-            var square = GetPolybiusSquare(key);
+            var square = GetPolybiusOrWheatstoneSquare(key);
             var n = square.GetLength(0);
             var resStr = "";
             for (int i = 0; i < text.Length; i++) {
@@ -169,7 +171,7 @@ namespace CryptographicAlgorithms {
         }
         public string DecryptPolybius(string encryptedMessage, string key) {
             encryptedMessage = encryptedMessage.ToLower();
-            var square = GetPolybiusSquare(key);
+            var square = GetPolybiusOrWheatstoneSquare(key);
             var resStr = "";
             var n = square.GetLength(0);
             for (int i = 0; i < encryptedMessage.Length; i++) {
@@ -194,11 +196,11 @@ namespace CryptographicAlgorithms {
         #endregion
 
         #region Scytale
-        public string EncryptScytale(string plainMessage, long key) {
+        public string EncryptScytale(string plainMessage, int key) {
             plainMessage = plainMessage.ToLower();
             var k = plainMessage.Length % key;
             if (k > 0) {
-                plainMessage += new string('_', (int)(key - k));
+                plainMessage += new string('_', key - k);
             }
 
             var column = plainMessage.Length / key;
@@ -206,13 +208,13 @@ namespace CryptographicAlgorithms {
 
             for (int i = 0; i < column; i++) {
                 for (int j = 0; j < key; j++) {
-                    result += plainMessage[(int)(i + column * j)].ToString();
+                    result += plainMessage[i + column * j].ToString();
                 }
             }
 
             return result;
         }
-        public string DecryptScytale(string encryptedMessage, long key) {
+        public string DecryptScytale(string encryptedMessage, int key) {
             encryptedMessage = encryptedMessage.ToLower();
             var column = encryptedMessage.Length / key;
             var symbols = new char[encryptedMessage.Length];
@@ -236,10 +238,8 @@ namespace CryptographicAlgorithms {
             }
             var resStr = "";
 
-            if (encrypt) {
-                for (int i = 0; i < text.Length % _key.Length; i++) {
-                    text += "_";
-                }
+            for (int i = 0; i < text.Length % _key.Length; i++) {
+                text += "_";
             }
 
             for (int i = 0; i < text.Length; i += _key.Length) {
@@ -274,7 +274,12 @@ namespace CryptographicAlgorithms {
                 { 'и', 19 }, { 'й', 20 }, { 'к', 21 }, { 'л', 22 }, { 'м', 23 }, { 'н', 24 },
                 { 'о', 25 }, { 'п', 26 }, { 'р', 27 }, { 'с', 28 }, { 'т', 29 }, { 'у', 30 },
                 { 'ф', 31 }, { 'х', 32 }, { 'ц', 33 }, { 'ч', 34 }, { 'ш', 35 }, { 'щ', 36 },
-                { 'ъ', 37 }, { 'ы', 38 }, { 'ь', 39 }, { 'э', 40 }, { 'ю', 41 }, { 'я', 42 }
+                { 'ъ', 37 }, { 'ы', 38 }, { 'ь', 39 }, { 'э', 40 }, { 'ю', 41 }, { 'я', 42 },
+                { 'a', 43 }, { 'b', 44 }, { 'c', 45 }, { 'd', 46 }, { 'e', 47 }, { 'f', 48 },
+                { 'g', 49 }, { 'h', 50 }, { 'i', 51 }, { 'j', 52 }, { 'k', 53 }, { 'l', 54 },
+                { 'm', 55 }, { 'n', 56 }, { 'o', 57 }, { 'p', 58 }, { 'q', 59 }, { 'r', 60 },
+                { 's', 61 }, { 't', 62 }, { 'u', 63 }, { 'v', 64 }, { 'w', 65 }, { 'x', 66 },
+                { 'y', 67 }, { 'z', 68 }
             };
             var arr = new int[key.Length];
             var count = 0;
@@ -297,7 +302,7 @@ namespace CryptographicAlgorithms {
             var sortedSecondKey = cryptSecondKey.OrderBy(x => x).ToArray();
 
 
-            var encryptStr = new char[sortedFirstKey.Length, sortedSecondKey.Length]; 
+            var encryptStr = new char[sortedFirstKey.Length, sortedSecondKey.Length];
             var originalStrArray = new char[sortedFirstKey.Length, sortedSecondKey.Length];
 
             // преобразуем шифруемую строку в массив
@@ -367,14 +372,18 @@ namespace CryptographicAlgorithms {
         public string DecryptMagicSquare(string encryptedMessage) {
             var resStr = "";
             var index = 0;
-            var arr = new char[5, 5];
+            char[,] arr = new char[5, 5];
             for (int i = 0; i < arr.GetLength(0); i++) {
                 for (int j = 0; j < arr.GetLength(1); j++) {
-                    arr[i, j] = encryptedMessage[index];
-                    index++;
+                    if (index == encryptedMessage.Length) {
+                        arr[i, j] = '_';
+                    } else {
+                        arr[i, j] = encryptedMessage[index];
+                        index++;
+                    }
                 }
             }
-            for (int j = 0; j < encryptedMessage.Length; j++) {
+            for (int j = 0; j < magicSquare.Length; j++) {
                 for (int i = 0; i < arr.GetLength(0); i++) {
                     for (int k = 0; k < arr.GetLength(1); k++) {
                         if (magicSquare[i, k] == j + 1) {
@@ -390,8 +399,8 @@ namespace CryptographicAlgorithms {
         #region Wheatstone
         private int[] FindIndexes(char symbol, char[,] matrix) {
             var a = new int[2];
-            for (int i = 0; i < 7; i++) {
-                for (int j = 0; j < 5; j++) {
+            for (int i = 0; i < matrix.GetLength(0); i++) {
+                for (int j = 0; j < matrix.GetLength(1); j++) {
                     if (symbol == matrix[i, j]) {
                         a[0] = i;
                         a[1] = j;
@@ -400,8 +409,12 @@ namespace CryptographicAlgorithms {
             }
             return a;
         }
-        private string CodeEncodeWheatstone(string message, bool encrypt = true) {
+        private string CodeEncodeWheatstone(string message, string key, bool encrypt = true) {
             message = message.ToLower();
+            var firstKey = key.Substring(0, key.IndexOf(' '));
+            var secondKey = key.Substring(key.IndexOf(' ') + 1);
+            var wheatStoneFirstMatrix = GetPolybiusOrWheatstoneSquare(firstKey, false);
+            var wheatStoneSecondMatrix = GetPolybiusOrWheatstoneSquare(secondKey, false);
             var resStr = "";
             if (message.Length % 2 != 0) {
                 message += '_';
@@ -433,8 +446,8 @@ namespace CryptographicAlgorithms {
             }
             return resStr;
         }
-        public string EncryptWheatstone(string message) => CodeEncodeWheatstone(message);
-        public string DecryptWheatstone(string encryptedMessage) => CodeEncodeWheatstone(encryptedMessage, false);
+        public string EncryptWheatstone(string message, string key) => CodeEncodeWheatstone(message, key);
+        public string DecryptWheatstone(string encryptedMessage, string key) => CodeEncodeWheatstone(encryptedMessage, key, false);
         #endregion
     }
 }
