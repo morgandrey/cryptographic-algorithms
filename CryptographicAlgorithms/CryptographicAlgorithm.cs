@@ -125,7 +125,8 @@ namespace CryptographicAlgorithms {
                             index++;
                         }
                         else {
-                            square[i, j] = ' ';
+                            square[i, j] = randStr[randStringIndex];
+                            randStringIndex++;
                         }
                     }
                 }

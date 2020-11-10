@@ -231,7 +231,7 @@ namespace CryptographicAlgorithms {
         #region CheckFunctions
         private bool CheckScytaleKeyTextBox() {
             if (int.Parse(keyTextBox.Text) > InputString.Length) {
-                MessageBox.Show("Введите диаметр меньший чем длина сообщения", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Введите диаметр меньший, чем длина сообщения", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
             return true;
@@ -264,23 +264,27 @@ namespace CryptographicAlgorithms {
             return true;
         }
         private bool CheckWheatstone() {
+            
             var cryptFirstKey = keyTextBox.Text.Substring(0, keyTextBox.Text.IndexOf(' '));
             var cryptSecondKey = keyTextBox.Text.Substring(keyTextBox.Text.IndexOf(' ') + 1);
             if (cryptSecondKey.Distinct().Count() != cryptSecondKey.Length
                 || cryptFirstKey.Distinct().Count() != cryptFirstKey.Length) {
-                MessageBox.Show("Ключи должны не содержать дубликатов.\nПример ключа: пароль_дом", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Ключи должны не содержать повторяющихся символов.\nПример ключа: пароль_дом", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
             return true;
         }
         private bool CheckDoubleTransposition() {
+
             var cryptFirstKey = keyTextBox.Text.Substring(0, keyTextBox.Text.IndexOf(' '));
             var cryptSecondKey = keyTextBox.Text.Substring(keyTextBox.Text.IndexOf(' ') + 1);
             if (cryptFirstKey.Length != cryptSecondKey.Length
                 || cryptFirstKey.Length * cryptSecondKey.Length < InputString.Length
                 || cryptSecondKey.Distinct().Count() != cryptSecondKey.Length
                 || cryptFirstKey.Distinct().Count() != cryptFirstKey.Length) {
-                MessageBox.Show("Ключи должны быть равными, не содержать дубликатов и количество символов в строке для шифрования не должно быть больше произведения количества символов двух ключей.\nПример ключа: 839_дом", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(
+                    "Ключи должны быть одинаковой длины, не содержать повторяющихся символов и количество символов в строке для шифрования должно быть больше произведения количества символов двух ключей.\nПример ключа: 839_дом",
+                    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
             return true;
@@ -314,6 +318,9 @@ namespace CryptographicAlgorithms {
                             r = new Regex("^[a-zA-Z]*$");
                             break;
                     }
+                    break;
+                default:
+                    r = new Regex("^[0-9а-яА-ЯёЁa-zA-Z]*$");
                     break;
             }
             e.Handled = !r.IsMatch(e.Text);
