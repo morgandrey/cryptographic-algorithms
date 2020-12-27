@@ -80,12 +80,9 @@ namespace CryptographicAlgorithms {
                     case true:
                         switch (AlgorithmSelectedItem) {
                             case Algorithm.Polybius:
-                                if (CheckPolybiusKeyTextBox()) {
-                                    resultLabel.Text =
-                                        cryptographicAlgorithm.EncryptPolybius(InputString, keyTextBox.Text);
+                                resultLabel.Text =
+                                        cryptographicAlgorithm.EncryptPolybius(InputString,keyTextBox.Text.ToCharSquare());
                                     break;
-                                }
-                                return;
                             case Algorithm.Caesar:
                                 resultLabel.Text =
                                     cryptographicAlgorithm.EncryptCaesar(InputString, long.Parse(keyTextBox.Text));
@@ -108,12 +105,9 @@ namespace CryptographicAlgorithms {
                                 }
                                 return;
                             case Algorithm.MagicSquare:
-                                if (CheckMagicSquareInputTextBox()) {
-                                    resultLabel.Text =
-                                        cryptographicAlgorithm.EncryptMagicSquare(InputString);
+                                resultLabel.Text =
+                                        cryptographicAlgorithm.EncryptMagicSquare(InputString, keyTextBox.Text.ToIntSquare());
                                     break;
-                                }
-                                return;
                             case Algorithm.TableTransposition:
                                 if (CheckTableTranspositionAlgorithmKeyTextBox()) {
                                     resultLabel.Text =
@@ -122,12 +116,9 @@ namespace CryptographicAlgorithms {
                                 }
                                 return;
                             case Algorithm.Wheatstone:
-                                if (CheckWheatstone()) {
-                                    resultLabel.Text =
+                                resultLabel.Text =
                                         cryptographicAlgorithm.EncryptWheatstone(InputString, keyTextBox.Text);
                                     break;
-                                }
-                                return;
                             case Algorithm.DoubleTransposition:
                                 if (CheckDoubleTransposition()) {
                                     resultLabel.Text =
@@ -140,12 +131,9 @@ namespace CryptographicAlgorithms {
                     case false:
                         switch (AlgorithmSelectedItem) {
                             case Algorithm.Polybius:
-                                if (CheckPolybiusKeyTextBox()) {
-                                    resultLabel.Text =
-                                        cryptographicAlgorithm.DecryptPolybius(InputString, keyTextBox.Text);
+                                resultLabel.Text =
+                                        cryptographicAlgorithm.DecryptPolybius(InputString, keyTextBox.Text.ToCharSquare());
                                     break;
-                                }
-                                return;
                             case Algorithm.Caesar:
                                 resultLabel.Text =
                                     cryptographicAlgorithm.DecryptCaesar(InputString, long.Parse(keyTextBox.Text));
@@ -168,12 +156,9 @@ namespace CryptographicAlgorithms {
                                 }
                                 return;
                             case Algorithm.MagicSquare:
-                                if (CheckMagicSquareInputTextBox()) {
-                                    resultLabel.Text =
-                                        cryptographicAlgorithm.DecryptMagicSquare(InputString);
+                                resultLabel.Text =
+                                        cryptographicAlgorithm.DecryptMagicSquare(InputString, keyTextBox.Text.ToIntSquare());
                                     break;
-                                }
-                                return;
                             case Algorithm.TableTransposition:
                                 if (CheckTableTranspositionAlgorithmKeyTextBox()) {
                                     resultLabel.Text =
@@ -182,12 +167,9 @@ namespace CryptographicAlgorithms {
                                 }
                                 return;
                             case Algorithm.Wheatstone:
-                                if (CheckWheatstone()) {
-                                    resultLabel.Text =
+                                resultLabel.Text =
                                         cryptographicAlgorithm.DecryptWheatstone(InputString, keyTextBox.Text);
                                     break;
-                                }
-                                return;
                             case Algorithm.DoubleTransposition:
                                 if (CheckDoubleTransposition()) {
                                     resultLabel.Text =
@@ -256,26 +238,8 @@ namespace CryptographicAlgorithms {
             }
             return true;
         }
-        private bool CheckMagicSquareInputTextBox() {
-            if (InputString.Length > 25) {
-                MessageBox.Show("Введите сообщение меньше 25 символов.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
-            return true;
-        }
-        private bool CheckWheatstone() {
-            
-            var cryptFirstKey = keyTextBox.Text.Substring(0, keyTextBox.Text.IndexOf(' '));
-            var cryptSecondKey = keyTextBox.Text.Substring(keyTextBox.Text.IndexOf(' ') + 1);
-            if (cryptSecondKey.Distinct().Count() != cryptSecondKey.Length
-                || cryptFirstKey.Distinct().Count() != cryptFirstKey.Length) {
-                MessageBox.Show("Ключи должны не содержать повторяющихся символов.\nПример ключа: пароль_дом", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
-            return true;
-        }
-        private bool CheckDoubleTransposition() {
 
+        private bool CheckDoubleTransposition() {
             var cryptFirstKey = keyTextBox.Text.Substring(0, keyTextBox.Text.IndexOf(' '));
             var cryptSecondKey = keyTextBox.Text.Substring(keyTextBox.Text.IndexOf(' ') + 1);
             if (cryptFirstKey.Length != cryptSecondKey.Length
@@ -289,50 +253,32 @@ namespace CryptographicAlgorithms {
             }
             return true;
         }
-        private bool CheckPolybiusKeyTextBox() {
-            if (keyTextBox.Text.Distinct().Count() != keyTextBox.Text.Length) {
-                MessageBox.Show("Введите ключ без повторяющих символов.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return false;
-            }
-            return true;
-        }
         #endregion
 
-        private void KeyTextBox_OnPreviewTextInput(object sender, TextCompositionEventArgs e) {
-            Regex r = null;
+        private void KeyTextBox_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
             switch (AlgorithmSelectedItem) {
                 case Algorithm.Gronsfeld:
                 case Algorithm.TableTransposition:
                 case Algorithm.Caesar:
                 case Algorithm.Scytale:
-                    r = new Regex("^[0-9]*$");
+                case Algorithm.MagicSquare:
+                    var r1 = new Regex("^[0-9]*$");
+                    e.Handled = !r1.IsMatch(e.Text);
                     break;
                 case Algorithm.Vigenere:
-                case Algorithm.Polybius:
-                case Algorithm.Wheatstone:
+                    Regex r2;
                     switch (AlphabetSelectedItem) {
                         case Alphabet.Russian:
-                            r = new Regex("^[а-яА-ЯёЁ]*$");
+                            r2 = new Regex("^[а-яА-ЯёЁ]*$");
+                            e.Handled = !r2.IsMatch(e.Text);
                             break;
                         case Alphabet.Latin:
-                            r = new Regex("^[a-zA-Z]*$");
+                            r2 = new Regex("^[a-zA-Z]*$");
+                            e.Handled = !r2.IsMatch(e.Text);
                             break;
                     }
                     break;
-                default:
-                    r = new Regex("^[0-9а-яА-ЯёЁa-zA-Z]*$");
-                    break;
-            }
-            e.Handled = !r.IsMatch(e.Text);
-        }
-
-        private void KeyTextBox_OnPreviewKeyDown(object sender, KeyEventArgs e) {
-            if (AlgorithmSelectedItem == Algorithm.DoubleTransposition && !keyTextBox.Text.Contains(' ')
-                || AlgorithmSelectedItem == Algorithm.Wheatstone && !keyTextBox.Text.Contains(' ')) {
-                return;
-            }
-            if (e.Key == Key.Space) {
-                e.Handled = true;
             }
         }
 

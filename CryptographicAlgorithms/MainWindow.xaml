@@ -9,7 +9,7 @@
         xmlns:extensions="clr-namespace:CryptographicAlgorithms.Extensions"
         xmlns:enums="clr-namespace:CryptographicAlgorithms.Enums"
         mc:Ignorable="d"
-        Title="Криптография" Height="700" Width="1000" MinHeight="700" MinWidth="1000" WindowStartupLocation="CenterScreen" Background="SlateGray">
+        Title="Криптография" Height="700" Width="1000" MinHeight="700" MinWidth="1000" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" Background="SlateGray">
     <Window.Resources>
         <Style TargetType="Button">
             <Setter Property="Cursor" Value="Hand"/>
@@ -37,26 +37,26 @@
         </Grid>
         <Grid Grid.RowSpan="2" Grid.Row="0" Grid.Column="0">
             <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition Height="57*"/>
+                <RowDefinition Height="75*"/>
+                <RowDefinition Height="56*"/>
+                <RowDefinition Height="40*"/>
             </Grid.RowDefinitions>
-            <UniformGrid Grid.Row="0" Rows="2">
-                <Label Content="Криптографический алгоритм" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="16"/>
-                <ComboBox Name="cryptographicAlgorithmComboBox" Margin="5,20,5,20" ItemsSource="{extensions:EnumBindingSource enums:Algorithm}" SelectedItem="{Binding AlgorithmSelectedItem}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="20"/>
+            <UniformGrid Grid.Row="0" Rows="2" Margin="0,0,0,85">
+                <Label Content="Криптографический алгоритм" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="16"/>
+                <ComboBox Name="cryptographicAlgorithmComboBox" Margin="5,0,5,0" ItemsSource="{extensions:EnumBindingSource enums:Algorithm}" SelectedItem="{Binding AlgorithmSelectedItem}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="20"/>
             </UniformGrid>
-            <UniformGrid Grid.Row="1" Rows="2">
-                <Label Content="Ключ" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="19"/>
-                <xctk:WatermarkTextBox Name="keyTextBox" Watermark="(15 символов максимум)" FontSize="20" MaxLength="15" Margin="5,15,5,15" VerticalContentAlignment="Center" TextWrapping="Wrap" HorizontalContentAlignment="Center" PreviewKeyDown="KeyTextBox_OnPreviewKeyDown" PreviewTextInput="KeyTextBox_OnPreviewTextInput"/>
+            <UniformGrid Rows="2" Margin="0,91,0,0" Grid.RowSpan="2">
+                <Label Content="Ключ" HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="19"/>
+                <xctk:WatermarkTextBox Name="keyTextBox" AcceptsReturn="True" FontSize="16" Margin="5,-118,0,0" TextWrapping="Wrap" PreviewTextInput="KeyTextBox_OnPreviewTextInput" FontFamily="Consolas"/>
             </UniformGrid>
-            <UniformGrid Grid.Row="2" Columns="2" Rows="2">
+            <UniformGrid Grid.Row="1" Columns="2" Rows="2" Margin="0,225,0,4" Grid.RowSpan="2">
                 <Button Name="encryptBtn" Margin="10,20,0,20" Content="шифрование" FontSize="15" IsEnabled="False" Click="ChangeAlgorithmDirection_OnClick"/>
                 <Button Name="decryptBtn" Margin="0,20,10,20" Content="расшифрование" FontSize="15" Click="ChangeAlgorithmDirection_OnClick"/>
                 <Label VerticalAlignment="Center" FontSize="15" HorizontalAlignment="Center" Content="Алфавит"/>
                 <ComboBox x:Name="alphabetComboBox" Margin="0,20,10,20" FontSize="15" ItemsSource="{extensions:EnumBindingSource enums:Alphabet}" SelectedItem="{Binding AlphabetSelectedItem}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
             </UniformGrid>
-            <Button Grid.Row="3" Margin="35,50,35,50" Content="Выполнить" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="35" Click="Apply_Click"/>
+            <Button Grid.Row="3" Margin="25,25,25,25" Content="Выполнить" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="35" Click="Apply_Click"/>
         </Grid>
     </Grid>
 </Window>

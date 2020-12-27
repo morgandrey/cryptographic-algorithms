@@ -2,19 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using CryptographicAlgorithms.Enums;
+using CryptographicAlgorithms.Extensions;
 
 namespace CryptographicAlgorithms {
     public class CryptographicAlgorithm {
         private const string rusAlphabetLower = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя_";
         private const string engAlphabetLower = "abcdefghijklmnopqrstuvwxyz_";
         private readonly string alphabet;
-        private readonly int[,] magicSquare = {
-            { 3, 16, 9, 22, 15 },
-            { 20, 8, 21, 14, 2 },
-            { 7, 25, 13, 1, 19 },
-            { 24, 12, 5, 18, 6 },
-            { 11, 4, 17, 10, 23 }
-        };
         public CryptographicAlgorithm(Alphabet alphabet) {
             switch (alphabet) {
                 case Alphabet.Russian:
@@ -106,88 +100,46 @@ namespace CryptographicAlgorithms {
         #endregion
 
         #region Polybius
-        private char[,] GetPolybiusOrWheatstoneSquare(string key, bool polybius = true) {
-            var newAlphabet = alphabet;
-            for (int i = 0; i < key.Length; i++) {
-                newAlphabet = newAlphabet.Replace(key[i].ToString(), "");
-            }
-            newAlphabet = key + newAlphabet;
-            var n = (int)Math.Ceiling(Math.Sqrt(newAlphabet.Length));
-            var square = new char[n, n];
-            var index = 0;
-            var randStringIndex = 0;
-            var randStr = "1234567890!@#$%^&*";
-            if (polybius) {
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < n; j++) {
-                        if (index < newAlphabet.Length) {
-                            square[i, j] = newAlphabet[index];
-                            index++;
-                        }
-                        else {
-                            square[i, j] = randStr[randStringIndex];
-                            randStringIndex++;
-                        }
-                    }
-                }
-            } else {
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < n; j++) {
-                        if (index < newAlphabet.Length) {
-                            square[i, j] = newAlphabet[index];
-                            index++;
-                        } else {
-                            square[i, j] = randStr[randStringIndex];
-                            randStringIndex++;
-                        }
-                    }
-                }
-            }
-
-            return square;
-        }
-        public string EncryptPolybius(string text, string key) {
+        public string EncryptPolybius(string text, char[,] key) {
             text = text.ToLower();
-            var square = GetPolybiusOrWheatstoneSquare(key);
-            var n = square.GetLength(0);
+            var n = key.GetLength(0);
             var resStr = "";
             for (int i = 0; i < text.Length; i++) {
-                for (int j = 0; j < square.GetLength(0); j++) {
-                    for (int k = 0; k < square.GetLength(1); k++) {
-                        if (text[i] == square[j, k]) {
+                for (int j = 0; j < key.GetLength(0); j++) {
+                    for (int k = 0; k < key.GetLength(1); k++) {
+                        if (text[i] == key[j, k]) {
                             if (j == n - 1) {
-                                resStr += square[0, k];
+                                resStr += key[0, k];
                                 continue;
                             }
-                            if (square[j + 1, k] == ' ') {
-                                resStr += square[0, k];
+                            if (key[j + 1, k] == ' ') {
+                                resStr += key[0, k];
                                 continue;
                             }
-                            resStr += square[j + 1, k];
+                            resStr += key[j + 1, k];
                         }
                     }
                 }
             }
             return resStr;
         }
-        public string DecryptPolybius(string encryptedMessage, string key) {
+        public string DecryptPolybius(string encryptedMessage, char[,] key) {
             encryptedMessage = encryptedMessage.ToLower();
-            var square = GetPolybiusOrWheatstoneSquare(key);
             var resStr = "";
-            var n = square.GetLength(0);
+            var n = key.GetLength(0);
             for (int i = 0; i < encryptedMessage.Length; i++) {
-                for (int j = 0; j < square.GetLength(0); j++) {
-                    for (int k = 0; k < square.GetLength(1); k++) {
-                        if (encryptedMessage[i] == square[j, k]) {
-                            if (j == 0 && square[n - 1, k] == ' ') {
-                                resStr += square[n - 2, k];
-                                continue;
-                            }
+                for (int j = 0; j < key.GetLength(0); j++) {
+                    for (int k = 0; k < key.GetLength(1); k++) {
+                        if (encryptedMessage[i] == key[j, k]) {
+                            //if (j == 0 && key[n - 1, k] == ' ') {
+                            //    resStr += key[n - 2, k];
+                            //    continue;
+                            //}
                             if (j == 0) {
-                                resStr += square[n - 1, k];
+                                resStr += key[n - 1, k];
                                 continue;
                             }
-                            resStr += square[j - 1, k];
+                            resStr += key[j - 1, k];
                         }
                     }
                 }
@@ -343,20 +295,15 @@ namespace CryptographicAlgorithms {
         public string DecryptDoubleTransposition(string encryptedMessage, string key) => CodeEncodeDoubleTransposition(encryptedMessage, key, false);
         #endregion
 
-        #region MagicSquare 5x5
-        public string EncryptMagicSquare(string plainMessage) {
+        #region MagicSquare
+        public string EncryptMagicSquare(string plainMessage, int[,] key) {
             var resStr = "";
-            char[,] arr = {
-                {'_', '_', '_', '_', '_'},
-                {'_', '_', '_', '_', '_'},
-                {'_', '_', '_', '_', '_'},
-                {'_', '_', '_', '_', '_'},
-                {'_', '_', '_', '_', '_'}
-            };
+            var arr = new char[key.GetLength(0),key.GetLength(1)]
+                .FillTwoDimensArray('_');
             for (int i = 0; i < plainMessage.Length; i++) {
-                for (int j = 0; j < magicSquare.GetLength(0); j++) {
-                    for (int k = 0; k < magicSquare.GetLength(1); k++) {
-                        if (magicSquare[j, k] == i + 1) {
+                for (int j = 0; j < key.GetLength(0); j++) {
+                    for (int k = 0; k < key.GetLength(1); k++) {
+                        if (key[j, k] == i + 1) {
                             arr[j, k] = plainMessage[i];
                         }
                     }
@@ -370,10 +317,10 @@ namespace CryptographicAlgorithms {
             return resStr;
         }
 
-        public string DecryptMagicSquare(string encryptedMessage) {
+        public string DecryptMagicSquare(string encryptedMessage, int[,] key) {
             var resStr = "";
             var index = 0;
-            char[,] arr = new char[5, 5];
+            var arr = new char[key.GetLength(0), key.GetLength(1)];
             for (int i = 0; i < arr.GetLength(0); i++) {
                 for (int j = 0; j < arr.GetLength(1); j++) {
                     if (index == encryptedMessage.Length) {
@@ -384,10 +331,10 @@ namespace CryptographicAlgorithms {
                     }
                 }
             }
-            for (int j = 0; j < magicSquare.Length; j++) {
+            for (int j = 0; j < key.Length; j++) {
                 for (int i = 0; i < arr.GetLength(0); i++) {
                     for (int k = 0; k < arr.GetLength(1); k++) {
-                        if (magicSquare[i, k] == j + 1) {
+                        if (key[i, k] == j + 1) {
                             resStr += arr[i, k];
                         }
                     }
@@ -412,10 +359,8 @@ namespace CryptographicAlgorithms {
         }
         private string CodeEncodeWheatstone(string message, string key, bool encrypt = true) {
             message = message.ToLower();
-            var firstKey = key.Substring(0, key.IndexOf(' '));
-            var secondKey = key.Substring(key.IndexOf(' ') + 1);
-            var wheatStoneFirstMatrix = GetPolybiusOrWheatstoneSquare(firstKey, false);
-            var wheatStoneSecondMatrix = GetPolybiusOrWheatstoneSquare(secondKey, false);
+            var firstMatrix = key.Substring(0, key.IndexOf('|')).ToCharSquare();
+            var secondMatrix = key.Substring(key.IndexOf('|') + 1).ToCharSquare();
             var resStr = "";
             if (message.Length % 2 != 0) {
                 message += '_';
@@ -433,10 +378,10 @@ namespace CryptographicAlgorithms {
             }
             var step = 0;
             while (step < length) {
-                var cortege1 = encrypt ? FindIndexes(bigram[step, 0], wheatStoneFirstMatrix) : FindIndexes(bigram[step, 0], wheatStoneSecondMatrix);
-                var cortege2 = encrypt ? FindIndexes(bigram[step, 1], wheatStoneSecondMatrix) : FindIndexes(bigram[step, 1], wheatStoneFirstMatrix);
-                crypto_bigram[step, 0] = encrypt ? wheatStoneSecondMatrix[cortege1[0], cortege2[1]] : wheatStoneFirstMatrix[cortege1[0], cortege2[1]];
-                crypto_bigram[step, 1] = encrypt ? wheatStoneFirstMatrix[cortege2[0], cortege1[1]] : wheatStoneSecondMatrix[cortege2[0], cortege1[1]];
+                var cortege1 = encrypt ? FindIndexes(bigram[step, 0], firstMatrix) : FindIndexes(bigram[step, 0], secondMatrix);
+                var cortege2 = encrypt ? FindIndexes(bigram[step, 1], secondMatrix) : FindIndexes(bigram[step, 1], firstMatrix);
+                crypto_bigram[step, 0] = encrypt ? secondMatrix[cortege1[0], cortege2[1]] : firstMatrix[cortege1[0], cortege2[1]];
+                crypto_bigram[step, 1] = encrypt ? firstMatrix[cortege2[0], cortege1[1]] : secondMatrix[cortege2[0], cortege1[1]];
                 step++;
             }
 
