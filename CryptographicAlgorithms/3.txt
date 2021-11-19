@@ -4,13 +4,7 @@ using System.Text;
 
 namespace CryptographicAlgorithms
 {
-    class _1
+    class _3
     {
     }
 }
-
-
-312312312312321
-
-
-kekek@
