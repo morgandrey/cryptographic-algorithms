@@ -38,6 +38,8 @@ namespace CryptographicAlgorithms {
                     retVal += alphabet[(int)codeIndex];
                 }
             }
+
+            Console.WriteLine("dwq");
             return retVal;
         }
         public string EncryptCaesar(string plainMessage, long key) => CodeEncodeCaesar(plainMessage, key);
